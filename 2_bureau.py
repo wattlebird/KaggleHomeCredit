@@ -48,6 +48,39 @@ def featurization(bureau, bb):
         })
     bureau_numerical.columns = pd.Index([e[0] + "_" + e[1].upper() for e in bureau_numerical.columns.tolist()])
 
+    bureau_numerical_active = bureau[bureau.CREDIT_ACTIVE == 'Active'].groupby('SK_ID_CURR').agg({
+        'DAYS_CREDIT': ['min', 'max', 'mean', 'var'],
+        'DAYS_CREDIT_ENDDATE': ['min', 'max', 'mean'],
+        'DAYS_CREDIT_UPDATE': ['mean'],
+        'CREDIT_DAY_OVERDUE': ['max', 'mean'],
+        'AMT_CREDIT_MAX_OVERDUE': ['mean'],
+        'AMT_CREDIT_SUM': ['max', 'mean', 'sum'],
+        'AMT_CREDIT_SUM_DEBT': ['max', 'mean', 'sum'],
+        'AMT_CREDIT_SUM_OVERDUE': ['mean'],
+        'AMT_CREDIT_SUM_LIMIT': ['mean', 'sum'],
+        'AMT_ANNUITY': ['max', 'mean'],
+        'CNT_CREDIT_PROLONG': ['sum']
+    })
+    bureau_numerical_active.columns = pd.Index(["ACTIVE_" + e[0] + "_" + e[1].upper() for e in bureau_numerical_active.columns.tolist()])
+    
+    bureau_numerical_closed = bureau[bureau.CREDIT_ACTIVE == 'Closed'].groupby('SK_ID_CURR').agg({
+        'DAYS_CREDIT': ['min', 'max', 'mean', 'var'],
+        'DAYS_CREDIT_ENDDATE': ['min', 'max', 'mean'],
+        'DAYS_CREDIT_UPDATE': ['mean'],
+        'CREDIT_DAY_OVERDUE': ['max', 'mean'],
+        'AMT_CREDIT_MAX_OVERDUE': ['mean'],
+        'AMT_CREDIT_SUM': ['max', 'mean', 'sum'],
+        'AMT_CREDIT_SUM_DEBT': ['max', 'mean', 'sum'],
+        'AMT_CREDIT_SUM_OVERDUE': ['mean'],
+        'AMT_CREDIT_SUM_LIMIT': ['mean', 'sum'],
+        'AMT_ANNUITY': ['max', 'mean'],
+        'CNT_CREDIT_PROLONG': ['sum']
+    })
+    bureau_numerical_closed.columns = pd.Index(["CLOSED_" + e[0] + "_" + e[1].upper() for e in bureau_numerical_closed.columns.tolist()])
+    
+    bureau_numerical = bureau_numerical.merge(bureau_numerical_active, left_index=True, right_index=True, how='left').\
+                                        merge(bureau_numerical_closed, left_index=True, right_index=True, how='left')
+
     dfs = []
     for col in bureau.columns:
         if bureau[col].dtype == 'object':
