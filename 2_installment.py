@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import re
 from setting import *
 
 
@@ -24,7 +25,7 @@ def featurization(df):
         'DAYS_ENTRY_PAYMENT': ['max', 'mean', 'sum'],
         'SK_ID_CURR': ['size']
     })
-    df_numerical.columns = pd.Index([e[0] + "_" + e[1].upper() for e in df_numerical.columns.tolist()])
+    df_numerical.columns = pd.Index([re.sub('[^0-9A-Z_]+', '_', (e[0] + "_" + e[1]).upper()) for e in df_numerical.columns.tolist()])
 
     return df_numerical.add_prefix('INS_')
 

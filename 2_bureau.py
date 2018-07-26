@@ -1,15 +1,16 @@
 import pandas as pd
 import numpy as np
+import re
 from setting import *
 
 
 def balance_featurization(df):
     bb_status = pd.crosstab(df.SK_ID_BUREAU, df.STATUS, normalize="index")
-    bb_status.columns = pd.Index([bb_status.columns.name + '_' + itm.upper() for itm in bb_status.columns.tolist()])
+    bb_status.columns = pd.Index([re.sub('[^0-9A-Z_]+', '_', (bb_status.columns.name + '_' + itm).upper()) for itm in bb_status.columns.tolist()])
 
     bb_month_balance = df.groupby('SK_ID_BUREAU').MONTHS_BALANCE.agg(['min', 'max', 'size'])
     bb_month_balance.columns.name = 'MONTHS_BALANCE'
-    bb_month_balance.columns = pd.Index([bb_month_balance.columns.name + '_' + itm.upper() for itm in bb_month_balance.columns.tolist()])
+    bb_month_balance.columns = pd.Index([re.sub('[^0-9A-Z_]+', '_', (bb_month_balance.columns.name + '_' + itm).upper()) for itm in bb_month_balance.columns.tolist()])
 
     rtn = pd.concat([bb_status, bb_month_balance], axis=1).add_prefix('BALANCE_')
     return rtn
@@ -31,7 +32,7 @@ def featurization(bureau, bb):
         'BALANCE_MONTHS_BALANCE_MAX': ['max'],
         'BALANCE_MONTHS_BALANCE_SIZE': ['mean', 'sum']
     })
-    bureau_balance.columns = pd.Index([e[0] + "_" + e[1].upper() for e in bureau_balance.columns.tolist()])
+    bureau_balance.columns = pd.Index([re.sub('[^0-9A-Z_]+', '_', (e[0] + "_" + e[1]).upper()) for e in bureau_balance.columns.tolist()])
 
     bureau_numerical = bureau.groupby('SK_ID_CURR').agg({
             'DAYS_CREDIT': ['min', 'max', 'mean', 'var'],
@@ -46,7 +47,7 @@ def featurization(bureau, bb):
             'AMT_ANNUITY': ['max', 'mean'],
             'CNT_CREDIT_PROLONG': ['sum']
         })
-    bureau_numerical.columns = pd.Index([e[0] + "_" + e[1].upper() for e in bureau_numerical.columns.tolist()])
+    bureau_numerical.columns = pd.Index([re.sub('[^0-9A-Z_]+', '_', (e[0] + "_" + e[1]).upper()) for e in bureau_numerical.columns.tolist()])
 
     bureau_numerical_active = bureau[bureau.CREDIT_ACTIVE == 'Active'].groupby('SK_ID_CURR').agg({
         'DAYS_CREDIT': ['min', 'max', 'mean', 'var'],
@@ -61,7 +62,7 @@ def featurization(bureau, bb):
         'AMT_ANNUITY': ['max', 'mean'],
         'CNT_CREDIT_PROLONG': ['sum']
     })
-    bureau_numerical_active.columns = pd.Index(["ACTIVE_" + e[0] + "_" + e[1].upper() for e in bureau_numerical_active.columns.tolist()])
+    bureau_numerical_active.columns = pd.Index([re.sub('[^0-9A-Z_]+', '_', ("ACTIVE_" + e[0] + "_" + e[1]).upper()) for e in bureau_numerical_active.columns.tolist()])
     
     bureau_numerical_closed = bureau[bureau.CREDIT_ACTIVE == 'Closed'].groupby('SK_ID_CURR').agg({
         'DAYS_CREDIT': ['min', 'max', 'mean', 'var'],
@@ -76,7 +77,7 @@ def featurization(bureau, bb):
         'AMT_ANNUITY': ['max', 'mean'],
         'CNT_CREDIT_PROLONG': ['sum']
     })
-    bureau_numerical_closed.columns = pd.Index(["CLOSED_" + e[0] + "_" + e[1].upper() for e in bureau_numerical_closed.columns.tolist()])
+    bureau_numerical_closed.columns = pd.Index([re.sub('[^0-9A-Z_]+', '_', ("CLOSED_" + e[0] + "_" + e[1]).upper()) for e in bureau_numerical_closed.columns.tolist()])
     
     bureau_numerical = bureau_numerical.merge(bureau_numerical_active, left_index=True, right_index=True, how='left').\
                                         merge(bureau_numerical_closed, left_index=True, right_index=True, how='left')
@@ -85,7 +86,7 @@ def featurization(bureau, bb):
     for col in bureau.columns:
         if bureau[col].dtype == 'object':
             t = pd.crosstab(bureau.SK_ID_CURR, bureau[col].fillna('NaN'), normalize='index')
-            t.columns = pd.Index([t.columns.name + '_' + itm.upper() for itm in t.columns.tolist()])
+            t.columns = pd.Index([re.sub('[^0-9A-Z_]+', '_', (t.columns.name + '_' + itm).upper()) for itm in t.columns.tolist()])
             dfs.append(t)
     bureau_categorial = pd.concat(dfs, axis = 1)
     

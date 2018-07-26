@@ -8,6 +8,7 @@ def feature(df):
     df['INCOME_PER_PERSON'] = df['AMT_INCOME_TOTAL'] / df['CNT_FAM_MEMBERS']
     df['ANNUITY_INCOME_PERC'] = df['AMT_ANNUITY'] / df['AMT_INCOME_TOTAL']
     df['PAYMENT_RATE'] = df['AMT_ANNUITY'] / df['AMT_CREDIT']
+    df['DAYS_EMPLOYED'].replace(365243, np.nan, inplace= True)
     return df[['SK_ID_CURR', 'DAYS_EMPLOYED_PERC', 'INCOME_CREDIT_PERC', 'INCOME_PER_PERSON', 'ANNUITY_INCOME_PERC', 'PAYMENT_RATE']]
 
 train = pd.read_csv(BASEDIR + '/train/application.csv', engine='c')

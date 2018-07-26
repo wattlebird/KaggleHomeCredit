@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import re
 from setting import *
 
 
@@ -10,13 +11,13 @@ def featurization(df):
         'SK_DPD_DEF': ['max', 'mean'],
         'SK_ID_CURR': ['size']
     })
-    df_numerical.columns = pd.Index([e[0] + "_" + e[1].upper() for e in df_numerical.columns.tolist()])
+    df_numerical.columns = pd.Index([re.sub('[^0-9A-Z_]+', '_', (e[0] + "_" + e[1]).upper()) for e in df_numerical.columns.tolist()])
 
     dfs = []
     for col in df.columns:
         if df[col].dtype == 'object':
             t = pd.crosstab(df.SK_ID_CURR, df[col].fillna('NaN'), normalize='index')
-            t.columns = pd.Index([t.columns.name + '_' + itm.upper() for itm in t.columns.tolist()])
+            t.columns = pd.Index([re.sub('[^0-9A-Z_]+', '_', (t.columns.name + '_' + itm).upper()) for itm in t.columns.tolist()])
             dfs.append(t)
     df_categorial = pd.concat(dfs, axis = 1)
     return pd.concat([df_numerical, df_categorial], axis = 1).add_prefix('POS_')
